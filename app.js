@@ -14,7 +14,7 @@ app.use(history())
 
 app.use(async function (ctx, next) {
   let url = ctx.request.url.split('?')[0]
-  let whiteUrl = [/.*\/$/, /.*\/login$/, /.*\/register$/, /.*\/logout$/, /.*\.js$/, /.*\.css$/, /.*\.html$/, /.*\.gif$/, /.*\.jpg$/, /.*\.jpeg$/, /.*\.png$/, /.*\.bmp$/, /.*\.ico$/, /.*\.woff$/, /.*\.ttf$/, /.*\.json$/, /.*\.svg$/, /.*\.map$/]
+  let whiteUrl = [/.*\/$/, /.*\/login$/, /.*\/register$/, /.*\/logout$/, /.*\/checkCode$/, /.*\.js$/, /.*\.css$/, /.*\.html$/, /.*\.gif$/, /.*\.jpg$/, /.*\.jpeg$/, /.*\.png$/, /.*\.bmp$/, /.*\.ico$/, /.*\.woff$/, /.*\.ttf$/, /.*\.json$/, /.*\.svg$/, /.*\.map$/]
   let isWhite = false
   for (let i = 0, len = whiteUrl.length; i < len; i++) {
     if (whiteUrl[i].test(url)) {
@@ -25,15 +25,11 @@ app.use(async function (ctx, next) {
   if (isWhite) {
     await next()
   } else {
-    console.log(1111111, url)
     let token = ctx.header.token
     let tokenVerify = await verifyToken(ctx, token)
-    console.log('tokenVerify.message', tokenVerify.message)
-
     if (tokenVerify.message) {
       ctx.response.body = tokenVerify
     } else {
-      console.log('ssssssssssssss')
       await next()
     }
   }

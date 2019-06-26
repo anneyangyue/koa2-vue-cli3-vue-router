@@ -10,6 +10,10 @@
       <el-form-item label="密码" prop="pass">
         <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
       </el-form-item>
+      <el-form-item label="验证码" prop="checkCode">
+        <el-input type="text" v-model="ruleForm.checkCode" autocomplete="off" class="codeinput"></el-input>
+        <span v-html="codeImg" @click="changeCode"></span>
+      </el-form-item>
       <el-form-item class="centerItem">
         <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
         <el-button @click="resetForm('ruleForm')">重置</el-button>
@@ -23,6 +27,12 @@
 import loginApi from '../../api/login'
 import {saveAdminInfo} from '../../util/jwt'
 export default {
+  created() {
+    loginApi.checkCode().then((res) => {
+      console.log('checkCode', res)
+      this.codeImg = res.data
+    })
+  },
   data() {
       var checkUsermame = (rule, value, callback) => {
         if (value === '') {
@@ -38,11 +48,18 @@ export default {
           callback()
         }
       }
+      var validCode = (rule, value, callback) => {
+        if (value === '') {
+          callback(new Error('请输入验证码'))
+        }else {
+          callback()
+        }
+      }
       return {
         ruleForm: {
           username: '',
-          pass: ''
-          
+          pass: '',
+          checkCode: ''
         },
         rules: {
           username: [
@@ -50,8 +67,12 @@ export default {
           ],
           pass: [
             { validator: validatePass, trigger: 'blur' }
+          ],
+          checkCode: [
+            { validator: validCode, trigger: 'blur' }
           ]
-        }
+        },
+        codeImg: ''
       }
     },
     methods: {
@@ -61,17 +82,16 @@ export default {
           if (valid) {
             loginApi.login({
               username: that.ruleForm.username,
-              password: that.ruleForm.pass
+              password: that.ruleForm.pass,
+              checkCode: that.ruleForm.checkCode
             }).then(function (res) {
               console.log('res',res,res.data)            
               if (res.data.code === 0) { 
                 that.$message.success(res.data.message)
                 saveAdminInfo(res.data.data)
                 that.$router.push('/')
-              } else if (res.data.code === 1) {
-                that.$message.warning(res.data.message)
               } else {
-                that.$message.warning('登录失败')
+                that.$message.warning(res.data.message)
               }
             })
           } else {
@@ -82,6 +102,12 @@ export default {
       },
       resetForm(formName) {
         this.$refs[formName].resetFields()
+      },
+      changeCode() {
+        loginApi.checkCode().then((res) => {
+          console.log('checkCode', res)
+          this.codeImg = res.data
+        })
       }
     }
 }
@@ -105,6 +131,9 @@ export default {
 .linkitem{
   color: #fff;
   text-decoration: none;
+}
+.codeinput{
+  width: 150px;
 }
 </style>
 

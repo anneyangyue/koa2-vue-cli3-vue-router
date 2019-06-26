@@ -5,5 +5,8 @@ export default {
   },
   login: async function (data) {
     return await axiosCommon.post('/api/login', data)
+  },
+  checkCode: async function () {
+    return await axiosCommon.get('/api/checkCode')
   }
 }
